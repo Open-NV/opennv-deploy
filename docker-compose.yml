@@ -1,0 +1,99 @@
+name: opennv
+
+services:
+  mongo:
+    image: mongo:8.0
+    restart: unless-stopped
+    command: ["mongod", "--bind_ip_all"]
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [control]
+
+  clisynth:
+    build:
+      context: ../clisynth
+    restart: unless-stopped
+    environment:
+      PORT: "8090"
+      OUTPUTFSM_ROOT: /packs
+      CLISYNTH_RELOAD_TOKEN: ${CLISYNTH_RELOAD_TOKEN:-local-demo-clisynth-reload-token-change-me-000000000000}
+    volumes:
+      - ../outputfsm-packs:/packs:ro
+    ports:
+      - "127.0.0.1:8090:8090"
+    networks: [control]
+
+  executor:
+    build:
+      context: ../opennv-validation/executor
+    restart: unless-stopped
+    environment:
+      OPENNV_DOCS: "true"
+      EXECUTOR_TOKEN: ${EXECUTOR_TOKEN:-local-demo-executor-token-change-me-000000000000000}
+      EXECUTOR_RELOAD_TOKEN: ${EXECUTOR_RELOAD_TOKEN:-local-demo-executor-reload-token-change-me-0000000000}
+      OUTPUTFSM_PACK_ROOT: /packs
+    volumes:
+      - ../outputfsm-packs:/packs:ro
+    ports:
+      - "127.0.0.1:8081:8081"
+    networks: [control, device]
+
+  api:
+    build:
+      context: ../opennv-validation/backend
+    restart: unless-stopped
+    environment:
+      PORT: "8080"
+      OPENNV_DEMO_MODE: "true"
+      MONGODB_URI: mongodb://mongo:27017
+      MONGODB_DATABASE: opennv
+      CLISYNTH_URL: http://clisynth:8090
+      NORNIR_EXECUTOR_URL: http://executor:8081
+      EXECUTOR_TOKEN: ${EXECUTOR_TOKEN:-local-demo-executor-token-change-me-000000000000000}
+      CLISYNTH_RELOAD_TOKEN: ${CLISYNTH_RELOAD_TOKEN:-local-demo-clisynth-reload-token-change-me-000000000000}
+      EXECUTOR_RELOAD_URL: http://executor:8081
+      EXECUTOR_RELOAD_TOKEN: ${EXECUTOR_RELOAD_TOKEN:-local-demo-executor-reload-token-change-me-0000000000}
+      VALIDATION_PACK_ROOT: /validation-packs
+      OUTPUTFSM_PACK_ROOT: /outputfsm-packs
+      ALLOWED_ORIGIN: http://localhost:4173
+    volumes:
+      - ../validation-packs:/validation-packs:ro
+      - ../outputfsm-packs:/outputfsm-packs:ro
+    depends_on:
+      mongo:
+        condition: service_healthy
+      clisynth:
+        condition: service_started
+      executor:
+        condition: service_started
+    ports:
+      - "127.0.0.1:8080:8080"
+    networks: [control]
+
+  console:
+    build:
+      context: ../opennv-validation/web
+      args:
+        VITE_API_URL: http://localhost:8080/v1
+        VITE_DEMO_FALLBACK: "false"
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_started
+    ports:
+      - "127.0.0.1:4173:8080"
+    networks: [control]
+
+volumes:
+  mongo-data:
+
+networks:
+  control:
+    internal: false
+  device:
+    internal: false

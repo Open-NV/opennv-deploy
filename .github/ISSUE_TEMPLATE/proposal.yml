@@ -1,0 +1,26 @@
+name: Deployment proposal
+description: Propose a topology, packaging, or operational change before implementation.
+title: "proposal: "
+labels: [proposal, needs-triage]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Operator problem
+      description: Describe the workflow or limitation before prescribing a solution.
+    validations:
+      required: true
+  - type: textarea
+    id: design
+    attributes:
+      label: Proposed design
+      description: Include service boundaries, source pinning, data flow, and alternatives.
+    validations:
+      required: true
+  - type: textarea
+    id: security
+    attributes:
+      label: Security, reliability, and cost
+      description: Explain public exposure, secrets, egress, persistence, scaling, rollback, and expected spend.
+    validations:
+      required: true

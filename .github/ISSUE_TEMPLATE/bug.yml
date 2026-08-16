@@ -1,0 +1,39 @@
+name: Deployment bug
+description: Report reproducible packaging, configuration, or runtime behavior.
+title: "bug: "
+labels: [bug, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: Do not include credentials, database URLs, Railway variables, production inventory, or security vulnerabilities. Use the private security process for sensitive reports.
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Observed behavior
+      description: What failed, and at which build or runtime boundary?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction
+      description: Provide minimal steps using synthetic data and redacted logs.
+    validations:
+      required: true
+  - type: input
+    id: revision
+    attributes:
+      label: Build-manifest digest or revision
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: CLI, Docker, operating-system, and deployment-provider versions.
