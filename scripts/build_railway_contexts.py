@@ -10,7 +10,6 @@ import shutil
 import subprocess
 from pathlib import Path
 
-
 DEPLOY_ROOT = Path(__file__).resolve().parents[1]
 WORKSPACE_ROOT = DEPLOY_ROOT.parent
 DEFAULT_OUTPUT = DEPLOY_ROOT / ".generated" / "railway"
